@@ -6,24 +6,19 @@ import ar.com.accn.adventure.dto.AdventureDecisionResponse;
 import ar.com.accn.adventure.dto.AdventureRequest;
 import ar.com.accn.adventure.dto.AdventureResponse;
 import ar.com.accn.adventure.prompt.AdventurePrompt;
-import jakarta.annotation.PostConstruct;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.openai.OpenAiChatOptions;
 // UserMessage and SystemMessage imports are intentionally omitted because
 // we use the fluent API on ChatClient for constructing messages.
 import org.springframework.ai.chat.memory.ChatMemory;
-import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
-import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;

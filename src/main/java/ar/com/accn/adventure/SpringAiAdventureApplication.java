@@ -1,4 +1,4 @@
-package com.example.springaiadventure;
+package ar.com.accn.adventure;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
