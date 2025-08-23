@@ -1,35 +1,55 @@
 package ar.com.accn.adventure.controller;
 
 
+import ar.com.accn.adventure.dto.AdventureDecisionRequest;
+import ar.com.accn.adventure.dto.AdventureDecisionResponse;
+import ar.com.accn.adventure.dto.AdventureRequest;
+import ar.com.accn.adventure.dto.AdventureResponse;
 
-import ar.com.accn.adventure.model.AdventureDecisionRequest;
-import ar.com.accn.adventure.model.AdventureDecisionResponse;
-import ar.com.accn.adventure.model.AdventureRequest;
-import ar.com.accn.adventure.model.AdventureResponse;
 import ar.com.accn.adventure.service.AdventureService;
-import ar.com.accn.adventure.service.DecisionService;
-import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
+
 
 @RestController
-@RequestMapping("/adventure")
+@RequestMapping("/adventures")
 public class AdventureController {
 
     private final AdventureService adventureService;
-    private final DecisionService decisionService;
 
-    public AdventureController(AdventureService adventureService, DecisionService decisionService) {
+    public AdventureController(AdventureService adventureService) {
         this.adventureService = adventureService;
-        this.decisionService = decisionService;
     }
 
-    @PostMapping("/generate")
-    public AdventureResponse generate(@RequestBody AdventureRequest request) {
-        return adventureService.generateAdventure(request);
+
+    @PostMapping
+    public AdventureResponse createAdventure(@Valid @RequestBody AdventureRequest request) {
+        return adventureService.createAdventure(request);
     }
+
 
     @PostMapping("/decision")
-    public AdventureDecisionResponse decision(@RequestBody AdventureDecisionRequest request) {
-        return decisionService.continueAdventure(request);
+    public AdventureDecisionResponse makeDecision(@Valid @RequestBody AdventureDecisionRequest request) {
+        return adventureService.makeDecision(request);
+    }
+
+
+    @GetMapping("/{sessionId}")
+    public AdventureResponse getFullStory(@PathVariable long sessionId) {
+        return adventureService.getFullStory(sessionId);
+    }
+
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<String> handleIllegalArgument(IllegalArgumentException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 }
-
