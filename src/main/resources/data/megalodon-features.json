@@ -1,0 +1,22 @@
+[
+  {
+    "id": "power",
+    "content": "El Megalodon ofrece 450 CV de potencia y una aceleración de 0‑100 km/h en 3,8 segundos."
+  },
+  {
+    "id": "speed",
+    "content": "Su velocidad máxima supera los 300 km/h gracias a su aerodinámica y motor turboalimentado."
+  },
+  {
+    "id": "roof",
+    "content": "Incluye un techo descapotable completamente automático que se abre en solo 12 segundos."
+  },
+  {
+    "id": "climate",
+    "content": "El climatizador bizona mantiene temperaturas independientes para conductor y acompañante."
+  },
+  {
+    "id": "interior",
+    "content": "Cuenta con un interior de cuero premium, asientos calefactados y sistema de infoentretenimiento de última generación."
+  }
+]

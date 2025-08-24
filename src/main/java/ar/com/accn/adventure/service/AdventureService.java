@@ -15,6 +15,7 @@ import org.springframework.ai.openai.OpenAiChatOptions;
 // UserMessage and SystemMessage imports are intentionally omitted because
 // we use the fluent API on ChatClient for constructing messages.
 import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -43,6 +44,7 @@ public class AdventureService {
 
     private final ChatClient chatClient;
     private final AdventurePrompt adventurePrompt;
+    private final VectorStore vectorStore;
 
     /**
      * Pattern used to extract numbered options from the model output.  It
@@ -65,9 +67,10 @@ public class AdventureService {
      */
     private final AtomicLong idGenerator = new AtomicLong(1);
 
-    public AdventureService(ChatClient chatClient, AdventurePrompt adventurePrompt) {
+    public AdventureService(ChatClient chatClient, AdventurePrompt adventurePrompt, VectorStore vectorStore) {
         this.chatClient = chatClient;
         this.adventurePrompt = adventurePrompt;
+        this.vectorStore = vectorStore;
     }
 
 
@@ -83,6 +86,34 @@ public class AdventureService {
         String userPrompt = adventurePrompt.render(request);
         log.debug("Initial prompt for session {}: {}", sessionId, userPrompt);
 
+        try {
+            // Build a search request.  The query should reflect what we want
+            // to retrieve; using keywords about the Megalodon ensures that
+            // relevant documents are returned.  topK=3 balances detail and
+            // brevity.
+            org.springframework.ai.vectorstore.SearchRequest searchRequest =
+                    org.springframework.ai.vectorstore.SearchRequest.builder()
+                            .query("Megalodon car features Shark Cars")
+                            .topK(3)
+                            .build();
+            List<org.springframework.ai.document.Document> docs = vectorStore.similaritySearch(searchRequest);
+            if (docs != null && !docs.isEmpty()) {
+                String context = docs.stream()
+                        .map(org.springframework.ai.document.Document::getText)
+                        .collect(java.util.stream.Collectors.joining("\n"));
+                String ragInstruction = "\n\nInformación sobre el coche Megalodon de Shark Cars:\n"
+                        + context
+                        + "\nAsegúrate de que el coche Megalodon aparezca en la historia y menciona al menos dos de estas características.";
+                userPrompt = userPrompt + ragInstruction;
+            } else {
+                log.warn("No se recuperó información del Megalodon desde la base vectorial. La historia se generará sin contexto de RAG.");
+            }
+        } catch (Exception e) {
+            // In case of any error during retrieval, log and proceed without RAG.
+            log.error("Error al recuperar las características del Megalodon desde la base vectorial", e);
+        }
+        log.debug("Initial prompt for session {}: {}", sessionId, userPrompt);
+
         // Build chat options.  We set a temperature > 0 to encourage creative
         // storytelling but remain deterministic enough for reproducibility.
         ChatOptions chatOptions = OpenAiChatOptions.builder().temperature(0.8).build();
@@ -91,8 +122,9 @@ public class AdventureService {
         // that the ChatMemory stores and retrieves the conversation
         // history for this session.  The default system prompt is
         // configured on the ChatClient bean.
+        String finalUserPrompt = userPrompt;
         String content = chatClient.prompt()
-                .user(u -> u.text(userPrompt))
+                .user(u -> u.text(finalUserPrompt))
                 .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
                 .options(chatOptions)
                 .call()

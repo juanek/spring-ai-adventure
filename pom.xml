@@ -74,6 +74,25 @@
             <version>${spring-ai.version}</version>
         </dependency>
 
+        <!-- Milvus vector store starter for storing embeddings and performing
+             similarity searches. This dependency auto-configures a
+             MilvusVectorStore based on properties prefixed with
+             spring.ai.vectorstore.milvus.*. -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-vector-store-milvus</artifactId>
+            <version>${spring-ai.version}</version>
+        </dependency>
+
+        <!-- Spring AI RAG library to support retrieval‑augmented generation
+             features such as the RetrievalAugmentationAdvisor. Including this
+             prepares the project for advanced RAG flows. -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-rag</artifactId>
+            <version>${spring-ai.version}</version>
+        </dependency>
+
         <!-- Lombok can reduce boilerplate getters/setters.  It is optional but
              convenient; remove if you prefer manual methods. -->
         <dependency>
