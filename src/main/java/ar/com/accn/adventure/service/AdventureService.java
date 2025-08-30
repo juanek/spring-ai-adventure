@@ -1,10 +1,7 @@
 package ar.com.accn.adventure.service;
 
 
-import ar.com.accn.adventure.dto.AdventureDecisionRequest;
-import ar.com.accn.adventure.dto.AdventureDecisionResponse;
-import ar.com.accn.adventure.dto.AdventureRequest;
-import ar.com.accn.adventure.dto.AdventureResponse;
+import ar.com.accn.adventure.dto.*;
 import ar.com.accn.adventure.prompt.AdventurePrompt;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -256,5 +253,32 @@ public class AdventureService {
         }
         String narrative = narrativeBuilder.toString().trim();
         return new ParsedResponse(narrative, choices);
+    }
+
+    public SummaryResponse generateSummary(long sessionId) {
+        StorySession session = sessions.get(sessionId);
+        if (session == null) {
+            throw new IllegalArgumentException("Sesión no encontrada: " + sessionId);
+        }
+        String narrative = session.getNarrative();
+        if (narrative == null || narrative.isBlank()) {
+            return new SummaryResponse(sessionId, "La aventura aún no tiene contenido que resumir.");
+        }
+        // Build a prompt instructing the model to summarise the story.
+        String summaryPrompt = String.format(
+                "Resume la siguiente historia en un párrafo breve y claro:\n%s",
+                narrative);
+        // Use a lower temperature to encourage concise output and limit the
+        // number of tokens to avoid overly long responses.
+        ChatOptions summaryOptions = OpenAiChatOptions.builder()
+                .temperature(0.5)
+                .maxTokens(200)
+                .build();
+        String summaryText = chatClient.prompt()
+                .user(u -> u.text(summaryPrompt))
+                .options(summaryOptions)
+                .call()
+                .content();
+        return new SummaryResponse(sessionId, summaryText.trim());
     }
 }

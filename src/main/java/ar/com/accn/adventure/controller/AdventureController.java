@@ -1,10 +1,7 @@
 package ar.com.accn.adventure.controller;
 
 
-import ar.com.accn.adventure.dto.AdventureDecisionRequest;
-import ar.com.accn.adventure.dto.AdventureDecisionResponse;
-import ar.com.accn.adventure.dto.AdventureRequest;
-import ar.com.accn.adventure.dto.AdventureResponse;
+import ar.com.accn.adventure.dto.*;
 
 import ar.com.accn.adventure.service.AdventureService;
 import jakarta.validation.Valid;
@@ -45,6 +42,11 @@ public class AdventureController {
     @GetMapping("/{sessionId}")
     public AdventureResponse getFullStory(@PathVariable long sessionId) {
         return adventureService.getFullStory(sessionId);
+    }
+
+    @GetMapping("/summary/{sessionId}")
+    public SummaryResponse getSummary(@PathVariable long sessionId) {
+        return adventureService.generateSummary(sessionId);
     }
 
 
