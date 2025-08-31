@@ -93,6 +93,13 @@
             <version>${spring-ai.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>4.12.0</version>
+        </dependency>
+
+
         <!-- Lombok can reduce boilerplate getters/setters.  It is optional but
              convenient; remove if you prefer manual methods. -->
         <dependency>
@@ -117,6 +124,14 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
         </plugins>
+
+            <resources>
+                <resource>
+                    <directory>src/main/resources</directory>
+                    <filtering>false</filtering>
+                </resource>
+            </resources>
+
     </build>
 
 </project>

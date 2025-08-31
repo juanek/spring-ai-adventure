@@ -8,18 +8,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.ChatOptions;
+import org.springframework.ai.openai.OpenAiAudioSpeechModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
 // UserMessage and SystemMessage imports are intentionally omitted because
 // we use the fluent API on ChatClient for constructing messages.
 import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.openai.audio.speech.SpeechPrompt;
+import org.springframework.ai.openai.audio.speech.SpeechResponse;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
@@ -42,6 +42,7 @@ public class AdventureService {
     private final ChatClient chatClient;
     private final AdventurePrompt adventurePrompt;
     private final VectorStore vectorStore;
+    private final OpenAiAudioSpeechModel speechModel;
 
     /**
      * Pattern used to extract numbered options from the model output.  It
@@ -64,10 +65,11 @@ public class AdventureService {
      */
     private final AtomicLong idGenerator = new AtomicLong(1);
 
-    public AdventureService(ChatClient chatClient, AdventurePrompt adventurePrompt, VectorStore vectorStore) {
+    public AdventureService(ChatClient chatClient, AdventurePrompt adventurePrompt, VectorStore vectorStore, OpenAiAudioSpeechModel speechModel) {
         this.chatClient = chatClient;
         this.adventurePrompt = adventurePrompt;
         this.vectorStore = vectorStore;
+        this.speechModel = speechModel;
     }
 
 
@@ -255,30 +257,33 @@ public class AdventureService {
         return new ParsedResponse(narrative, choices);
     }
 
-    public SummaryResponse generateSummary(long sessionId) {
+    public StorySession generateSummary(long sessionId) {
         StorySession session = sessions.get(sessionId);
         if (session == null) {
             throw new IllegalArgumentException("Sesión no encontrada: " + sessionId);
         }
-        String narrative = session.getNarrative();
-        if (narrative == null || narrative.isBlank()) {
-            return new SummaryResponse(sessionId, "La aventura aún no tiene contenido que resumir.");
+
+        if (session.getSummaryText() == null) {
+            // Build a prompt instructing the model to summarise the story.
+            String summaryPrompt = String.format(
+                    "Resume la siguiente historia en un párrafo breve y claro:\n%s",
+                    session.getNarrative());
+            // Use a lower temperature to encourage concise output and limit the
+            // number of tokens to avoid overly long responses.
+            ChatOptions summaryOptions = OpenAiChatOptions.builder()
+                    .temperature(0.5)
+                    .maxTokens(200)
+                    .build();
+            String summaryText = chatClient.prompt()
+                    .user(u -> u.text(summaryPrompt))
+                    .options(summaryOptions)
+                    .call()
+                    .content();
+            session.setSummaryText(summaryText);
+            // Convierte a audio y lo guarda; si no quieres guardarlo, elimina estas líneas
+            SpeechResponse resp = speechModel.call(new SpeechPrompt(summaryText));
+            session.setSummaryAudio(resp.getResult().getOutput());
         }
-        // Build a prompt instructing the model to summarise the story.
-        String summaryPrompt = String.format(
-                "Resume la siguiente historia en un párrafo breve y claro:\n%s",
-                narrative);
-        // Use a lower temperature to encourage concise output and limit the
-        // number of tokens to avoid overly long responses.
-        ChatOptions summaryOptions = OpenAiChatOptions.builder()
-                .temperature(0.5)
-                .maxTokens(200)
-                .build();
-        String summaryText = chatClient.prompt()
-                .user(u -> u.text(summaryPrompt))
-                .options(summaryOptions)
-                .call()
-                .content();
-        return new SummaryResponse(sessionId, summaryText.trim());
+        return session;
     }
 }

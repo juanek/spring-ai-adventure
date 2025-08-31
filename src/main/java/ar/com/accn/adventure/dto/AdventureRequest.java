@@ -8,9 +8,14 @@ import ar.com.accn.adventure.model.Protagonist;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.List;
 
 
+@Setter
+@Getter
 public class AdventureRequest {
 
     @NotNull
@@ -31,43 +36,4 @@ public class AdventureRequest {
     @Size(min = 1)
     private String location;
 
-    public Genre getGenre() {
-        return genre;
-    }
-
-    public void setGenre(Genre genre) {
-        this.genre = genre;
-    }
-
-    public Duration getDuration() {
-        return duration;
-    }
-
-    public void setDuration(Duration duration) {
-        this.duration = duration;
-    }
-
-    public Complexity getComplexity() {
-        return complexity;
-    }
-
-    public void setComplexity(Complexity complexity) {
-        this.complexity = complexity;
-    }
-
-    public List<Protagonist> getProtagonists() {
-        return protagonists;
-    }
-
-    public void setProtagonists(List<Protagonist> protagonists) {
-        this.protagonists = protagonists;
-    }
-
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
-    }
 }

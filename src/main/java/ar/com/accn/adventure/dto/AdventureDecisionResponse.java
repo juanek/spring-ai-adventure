@@ -1,8 +1,11 @@
 package ar.com.accn.adventure.dto;
 
+import lombok.Getter;
+
 import java.util.List;
 
 
+@Getter
 public class AdventureDecisionResponse {
     private final long sessionId;
     private final String narrative;
@@ -16,19 +19,4 @@ public class AdventureDecisionResponse {
         this.finished = finished;
     }
 
-    public long getSessionId() {
-        return sessionId;
-    }
-
-    public String getNarrative() {
-        return narrative;
-    }
-
-    public List<String> getChoices() {
-        return choices;
-    }
-
-    public boolean isFinished() {
-        return finished;
-    }
 }

@@ -2,7 +2,7 @@ package ar.com.accn.adventure.model;
 
 
 public enum Duration {
-    SHORT(5),
+    SHORT(1),
     MEDIUM(10),
     LONG(20);
 

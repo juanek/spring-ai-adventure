@@ -1,16 +1,34 @@
 package ar.com.accn.adventure.service;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.List;
 
 
 public class StorySession {
 
+    @Getter
     private final long id;
+    @Getter
     private final String conversationId;
+    @Getter
     private int remainingDecisions;
+    @Getter
     private final int optionsPerDecision;
+    @Setter
+    @Getter
     private boolean finished;
+    @Setter
+    @Getter
     private List<String> lastChoices;
+
+    @Setter
+    @Getter
+    private String summaryText;
+    @Setter
+    @Getter
+    private byte[] summaryAudio;
 
 
     private final StringBuilder narrative = new StringBuilder();
@@ -28,7 +46,7 @@ public class StorySession {
         if (segment == null || segment.isBlank()) {
             return;
         }
-        if (narrative.length() > 0) {
+        if (!narrative.isEmpty()) {
             narrative.append("\n\n");
         }
         narrative.append(segment.trim());
@@ -39,41 +57,10 @@ public class StorySession {
         return narrative.toString();
     }
 
-    public long getId() {
-        return id;
-    }
-
-    public String getConversationId() {
-        return conversationId;
-    }
-
-    public int getRemainingDecisions() {
-        return remainingDecisions;
-    }
-
     public void decrementRemainingDecisions() {
         if (remainingDecisions > 0) {
             remainingDecisions--;
         }
     }
 
-    public int getOptionsPerDecision() {
-        return optionsPerDecision;
-    }
-
-    public boolean isFinished() {
-        return finished;
-    }
-
-    public void setFinished(boolean finished) {
-        this.finished = finished;
-    }
-
-    public List<String> getLastChoices() {
-        return lastChoices;
-    }
-
-    public void setLastChoices(List<String> lastChoices) {
-        this.lastChoices = lastChoices;
-    }
 }
