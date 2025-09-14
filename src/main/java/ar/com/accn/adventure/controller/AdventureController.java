@@ -5,13 +5,12 @@ import ar.com.accn.adventure.dto.*;
 
 import ar.com.accn.adventure.service.AdventureService;
 import ar.com.accn.adventure.service.StorySession;
+import ar.com.accn.adventure.service.SummaryImageService;
 import jakarta.validation.Valid;
 import org.springframework.ai.openai.OpenAiAudioSpeechModel;
 import org.springframework.ai.openai.audio.speech.SpeechPrompt;
 import org.springframework.ai.openai.audio.speech.SpeechResponse;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -21,10 +20,12 @@ public class AdventureController {
 
     private final AdventureService adventureService;
     private final OpenAiAudioSpeechModel speechModel;
+    private final SummaryImageService summaryImageService;
 
-    public AdventureController(AdventureService adventureService, OpenAiAudioSpeechModel speechModel) {
+    public AdventureController(AdventureService adventureService, OpenAiAudioSpeechModel speechModel, SummaryImageService summaryImageService) {
         this.adventureService = adventureService;
         this.speechModel = speechModel;
+        this.summaryImageService = summaryImageService;
     }
 
 
@@ -71,6 +72,17 @@ public class AdventureController {
                         "attachment; filename=\"summary-" + sessionId + ".mp3\"")
                 .body(audio);
     }
+
+    @PostMapping(value = "/image-from-summary", produces = MediaType.IMAGE_PNG_VALUE)
+    public ResponseEntity<byte[]> imageFromSummary(@RequestBody ImageFromSummaryRequest req) {
+        byte[] png = summaryImageService.generatePng(req.summary(), req.size(), req.quality());
+        return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_PNG)
+                .cacheControl(CacheControl.noStore())
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"adventure.png\"")
+                .body(png);
+    }
+
 
 
     @ExceptionHandler(IllegalArgumentException.class)
