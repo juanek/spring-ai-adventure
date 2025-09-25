@@ -1,136 +1,181 @@
 # Spring AI Adventure
 
-Pequeña app **Spring Boot + Spring AI** que genera aventuras interactivas y —en esta rama— **una imagen a partir del resumen** de la historia. Pensada como cápsula de entrenamiento JavaShark.
+Aplicación **Spring Boot 3 + Spring AI** para generar aventuras interactivas con soporte de:
+- Generación de **historias ramificadas**.
+- Resúmenes en **texto**, **audio (MP3)** e **imagen (PNG)**.
+- Persistencia de embeddings en **Milvus** (vector store).
+- Exploración vía **Swagger UI**.
+
+---
 
 ## ✨ Características
 
-- **Generación de historias** con opciones (branching) usando `ChatClient`.
-- **Imagen desde el resumen** (texto → imagen) usando `ImageClient` de Spring AI.
-- Endpoints REST listos para probar con `curl` / Postman.
-- Perfil de configuración simple por propiedades/variables de entorno.
-- Docker Compose opcional para levantar dependencias comunes.
+- **Historias interactivas** con decisiones en cada paso.
+- **Resúmenes** automáticos de la aventura.
+- **Audio** TTS (Text-To-Speech) del resumen (formato MP3).
+- **Imagen** generada desde el resumen (PNG).
+- **Integración con Milvus** para almacenamiento de embeddings.
+- **Swagger UI** habilitado en `/swagger-ui.html`.
+
+---
 
 ## 🧱 Tech Stack
 
-- **Java 17+ / 21**
-- **Spring Boot 3.x**
-- **Spring Web**
-- **Spring AI** (Chat + Image)
-- **Maven**
-- **Docker Compose** (opcional)
+- Java 17+ / 21
+- Spring Boot 3.x
+- Spring AI (Chat, Image, Audio, VectorStore)
+- Milvus (Docker)
+- OpenAI API
+- Maven
 
-## 📂 Estructura (resumen)
-
-```
-spring-ai-adventure/
- ├─ src/main/java/.../adventure/   # Controllers, services, prompts (historia / imagen)
- ├─ src/main/resources/
- │   ├─ application.properties # Config por ambiente
- ├─ pom.xml
- └─ docker-compose.yml
-```
+---
 
 ## ⚙️ Configuración
 
-### Variables de entorno sugeridas
+El archivo [`application.properties`](./src/main/resources/application.properties) incluye la configuración base:
 
-```bash
-# Clave del proveedor (OpenAI como ejemplo)
-export SPRING_AI_OPENAI_API_KEY=sk-...
+```properties
+spring.application.name=spring-ai-adventure
 
-# Modelo de texto (opcional, depende de tu pom.yml)
-export SPRING_AI_OPENAI_CHAT_OPTIONS_MODEL=gpt-4o-mini
+# OpenAI
+spring.ai.openai.api-key=${OPENAI_API_KEY:}
+spring.ai.openai.model=gpt-4o
 
-# Modelo de imagen (Spring AI soporta opciones para DALL·E/GPT)
-export SPRING_AI_OPENAI_IMAGE_OPTIONS_MODEL=dall-e-3
-# Tamaño (ver doc de imagenes: 1024x1024 | 1792x1024 | 1024x1792 para DALL·E 3)
-export SPRING_AI_OPENAI_IMAGE_OPTIONS_SIZE=1024x1024
+spring.ai.openai.image.options.size=1024x1024
+spring.ai.openai.image.options.quality=standard
+spring.ai.openai.image.options.response_format=b64_json
+
+# Milvus
+spring.ai.vectorstore.milvus.client.host=localhost
+spring.ai.vectorstore.milvus.client.port=19530
+spring.ai.vectorstore.milvus.client.username=root
+spring.ai.vectorstore.milvus.client.password=Milvus
+spring.ai.vectorstore.milvus.database-name=default
+spring.ai.vectorstore.milvus.collection-name=megalodon_features
+spring.ai.vectorstore.milvus.embedding-dimension=1536
+spring.ai.vectorstore.milvus.index-type=IVF_FLAT
+spring.ai.vectorstore.milvus.metric-type=COSINE
+spring.ai.vectorstore.milvus.initialize-schema=true
+
+# TTS
+spring.ai.openai.audio.speech.options.model=tts-1
+spring.ai.openai.audio.speech.options.voice=alloy
+spring.ai.openai.audio.speech.options.response-format=mp3
+spring.ai.openai.audio.speech.options.speed=1.0
+
+# Swagger
+springdoc.api-docs.enabled=true
+springdoc.api-docs.path=/api-docs
+springdoc.swagger-ui.enabled=true
 ```
 
-Si usas `application.yml`, puedes mapearlas como:
-
-```yaml
-spring:
-  ai:
-    openai:
-      api-key: ${SPRING_AI_OPENAI_API_KEY}
-      chat:
-        options:
-          model: ${SPRING_AI_OPENAI_CHAT_OPTIONS_MODEL:gpt-4o-mini}
-      image:
-        options:
-          model: ${SPRING_AI_OPENAI_IMAGE_OPTIONS_MODEL:dall-e-3}
-          size: ${SPRING_AI_OPENAI_IMAGE_OPTIONS_SIZE:1024x1024}
-```
+---
 
 ## ▶️ Ejecución
 
-### Opción A – Maven (local)
-
+### Opción A – Maven local
 ```bash
-./mvnw -q clean package
+./mvnw clean package
 ./mvnw spring-boot:run
 ```
 
-### Opción B – Jar
-
+### Opción B – JAR
 ```bash
 java -jar target/spring-ai-adventure-*.jar
 ```
 
-### Opción C – Docker (si aplica)
+### Opción C – Docker Compose
+
+Incluye un `docker-compose.yml` con Milvus y dependencias:
 
 ```bash
 docker compose up -d
 ```
 
-## 📚 Endpoints
+---
 
-### 1) Generar historia
+## 📚 Endpoints principales
 
+Basado en [`AdventureController.java`](./src/main/java/ar/com/accn/adventure/controller/AdventureController.java):
+
+### 1) Crear aventura
 **POST** `/adventures`
-
 ```json
 {
-  "genre": "fantasy",
-  "protagonistName": "Luna",
-  "protagonistDescription": "hacker curiosa",
-  "location": "Buenos Aires subterráneo",
-  "duration": "short",
-  "complexity": "simple"
+  "genre": "FANTASY",
+  "duration": "SHORT",
+  "complexity": "LOW",
+  "location": "bosque encantado",
+  "protagonists": [
+    { "name": "Aldo", "description": "Un valiente mago" }
+  ]
 }
 ```
 
-### 2) Continuar historia
-
-**POST** `/adventures/{id}/choose`
-
-```json
-{ "choiceIndex": 1 }
-```
-
-### 3) Generar imagen desde resumen
-
-**POST** `/adventures/image`
-
+### 2) Tomar decisión
+**POST** `/adventures/decision`
 ```json
 {
-  "summary": "Luna, una hacker curiosa, encuentra un portal de neón en el subte...",
-  "style": "cinematic",
-  "size": "1024x1024"
+  "sessionId": 1,
+  "choiceIndex": 0
 }
 ```
 
-## 🧪 cURL rápido
+### 3) Historia completa
+**GET** `/adventures/{sessionId}`
 
-```bash
-curl -sS -X POST http://localhost:8080/adventures   -H "Content-Type: application/json"   -d '{"genre":"sci-fi","protagonistName":"Alex","protagonistDescription":"piloto","location":"Marte","duration":"short","complexity":"simple"}' | jq
+### 4) Resumen en texto
+**GET** `/adventures/summary/text/{sessionId}`
+
+### 5) Resumen en audio (MP3)
+**GET** `/adventures/summary/audio/{sessionId}`  
+Devuelve un archivo `summary-{id}.mp3`.
+
+### 6) Imagen desde resumen
+**POST** `/adventures/image-from-summary`  
+Body:
+```json
+{
+  "summary": "Portada épica estilo ilustración: héroe con linterna frente a una cueva luminosa",
+  "size": "1024x1024",
+  "quality": "standard"
+}
 ```
+Response: `image/png`
 
-## 🧩 Cómo está implementado
+---
 
-- **Prompts**: plantilla estructurada (system + user) para salida JSON.
-- **Servicios**: `AdventureService` usa `ChatClient`.
-- **Imagen**: `ImageService` usa `ImageClient`.
-- **Config**: propiedades `spring.ai.openai.*` para texto e imagen.
+## 🧪 Colección Postman
 
+Se incluye [`SpringAI.postman_collection.json`](./SpringAI.postman_collection.json) con ejemplos para todos los endpoints:
+
+- `generate adventures`
+- `decision adventures`
+- `adventures (GET)`
+- `adventures summary (texto)`
+- `adventures summary audio`
+- `adventures summary image`
+
+Importar en Postman → Collections → *Import*.
+
+---
+
+## 📖 Swagger
+
+- OpenAPI JSON: [http://localhost:8080/api-docs](http://localhost:8080/api-docs)  
+- UI: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+
+---
+
+## 🛠 Troubleshooting
+
+- **401/403** → revisa `OPENAI_API_KEY`.
+- **Model not found** → cambia `spring.ai.openai.model` en `application.properties`.
+- **Milvus no conecta** → revisa `docker compose logs` y credenciales (`root/Milvus`).
+- **Imagen corrupta** → verifica que `response_format=b64_json` esté configurado.
+
+---
+
+## 📜 Licencia
+
+MIT (o la que prefieras)
