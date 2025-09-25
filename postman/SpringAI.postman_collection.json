@@ -1,0 +1,194 @@
+{
+	"info": {
+		"_postman_id": "a36af45e-9ca7-42e0-8f1e-d30085aebfbb",
+		"name": "SpringAI",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "11944835"
+	},
+	"item": [
+		{
+			"name": "generate adventures",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"genre\": \"FANTASY\",\n    \"duration\": \"SHORT\",\n    \"complexity\": \"LOW\",\n    \"location\": \"bosque encantado\",\n    \"protagonists\": [\n      { \"name\": \"Aldo\", \"description\": \"Un valiente mago\" }\n    ]\n  }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/adventures",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"adventures"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "desicion adventures",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"sessionId\": 1,\n    \"choiceIndex\": 0\n  }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/adventures/decision",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"adventures",
+						"decision"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "adventures",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/adventures/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"adventures",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "adventures summary",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/adventures/summary/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"adventures",
+						"summary",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "adventures summary audio",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/adventures/summary/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"adventures",
+						"summary",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "adventures summary image",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"summary\": \"Portada épica estilo ilustración: héroe con linterna frente a una cueva luminosa, atmósfera de aventura y misterio\",\n    \"size\": \"1024x1024\",\n    \"quality\": \"standard\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/adventures/image-from-summary",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"adventures",
+						"image-from-summary"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
